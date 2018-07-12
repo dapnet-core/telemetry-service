@@ -34,6 +34,23 @@ complete_telemetry_1['temperatures']['transmitter'] = 14.2
 complete_telemetry_1['temperatures']['power_amplifier'] = 14.2
 complete_telemetry_1['temperatures']['cpu'] = 14.2
 complete_telemetry_1['temperatures']['power_supply'] = 14.2
+complete_telemetry_1['power_supply'] = {}
+complete_telemetry_1['power_supply']['on_battery'] = False
+complete_telemetry_1['power_supply']['on_emergency_power'] = False
+complete_telemetry_1['power_supply']['dc_input_voltage'] = 12.4
+complete_telemetry_1['power_supply']['dc_input_current'] = 1.2
+complete_telemetry_1['rf_output'] = {}
+complete_telemetry_1['rf_output']['fwd'] = 12.2
+complete_telemetry_1['rf_output']['refl'] = 1.2
+complete_telemetry_1['rf_output']['vswr'] = 1.2
+complete_telemetry_1['config'] = {}
+complete_telemetry_1['config']['ip'] = '1.2.3.4'
+complete_telemetry_1['config']['timeslots'] = [True, True, False, True, False, False, True, True, False, True, False, False, True, True, False, True, False, False]
+complete_telemetry_1['config']['software'] = {}
+complete_telemetry_1['config']['software']['name'] = 'Unipager'
+complete_telemetry_1['config']['software']['verson'] = '1.2.3'
+complete_telemetry_1['hardware'] = {}
+complete_telemetry_1['hardware']['platform'] = 'Raspberry Pi 3B+'
 
 
 
@@ -42,6 +59,55 @@ def send_all_public(threadName, delay, server):
         server.send_message_to_all(json.dumps(complete_telemetry_1))
         time.sleep (delay)
 #        print ('Send public message from %s' % (threadName))
+
+def send_ntp_public(threadName, delay, server):
+    while 1:
+        complete_telemetry_1['ntp']['synced'] = (randint(0, 50) > 40)
+        update_data = {}
+        update_data['name'] = complete_telemetry_1['name']
+        update_data['type'] = complete_telemetry_1['type']
+
+        if complete_telemetry_1['ntp']['synced']:
+            complete_telemetry_1['ntp']['offset'] = randint(0, 2000)
+            update_data['ntp'] = complete_telemetry_1['ntp']
+        else:
+            update_data['ntp'] = {}
+            update_data['ntp']['synced'] = False
+
+        server.send_message_to_all(json.dumps(update_data))
+        time.sleep (delay)
+#        print ('Send public message from %s' % (threadName))
+def send_rf_output_public(threadName, delay, server):
+    while 1:
+        complete_telemetry_1['rf_output']['fwd'] = randint(5, 2000) / 10
+        complete_telemetry_1['rf_output']['refl'] = randint(0, 100) / 10
+        complete_telemetry_1['rf_output']['vswr'] = randint(10, 30) / 10
+
+        update_data = {}
+        update_data['name'] = complete_telemetry_1['name']
+        update_data['type'] = complete_telemetry_1['type']
+        update_data['rf_output'] = complete_telemetry_1['rf_output']
+
+        server.send_message_to_all(json.dumps(update_data))
+        time.sleep (delay)
+#        print ('Send public message from %s' % (threadName))
+
+def send_power_supply_public(threadName, delay, server):
+    while 1:
+        complete_telemetry_1['power_supply']['on_battery'] = (randint(0, 10) > 8)
+        complete_telemetry_1['power_supply']['on_emergency_power'] = (randint(0, 10) > 8)
+        complete_telemetry_1['power_supply']['dc_input_voltage'] = randint(100, 150) / 10
+        complete_telemetry_1['power_supply']['dc_input_current'] = randint(5, 100) / 10
+
+        update_data = {}
+        update_data['name'] = complete_telemetry_1['name']
+        update_data['type'] = complete_telemetry_1['type']
+        update_data['power_supply'] = complete_telemetry_1['power_supply']
+
+        server.send_message_to_all(json.dumps(update_data))
+        time.sleep (delay)
+#        print ('Send public message from %s' % (threadName))
+
 
 def send_temp_public(threadName, delay, server):
     while 1:
@@ -60,6 +126,21 @@ def send_temp_public(threadName, delay, server):
         server.send_message_to_all(json.dumps(update_data))
         time.sleep (delay)
 #        print ('Send public message from %s' % (threadName))
+
+def send_messages_public(threadName, delay, server):
+    while 1:
+        complete_telemetry_1['messages']['queued']= [randint(0, 100), randint(0, 100), randint(0, 100), randint(0, 100), randint(0, 100), ]
+        complete_telemetry_1['messages']['sent']= [randint(0, 100), randint(0, 100), randint(0, 100), randint(0, 100), randint(0, 100), ]
+
+        update_data = {}
+        update_data['name'] = complete_telemetry_1['name']
+        update_data['type'] = complete_telemetry_1['type']
+        update_data['messages'] = complete_telemetry_1['messages']
+
+        server.send_message_to_all(json.dumps(update_data))
+        time.sleep (delay)
+#        print ('Send public message from %s' % (threadName))
+
 
 def send_tx_public(threadName, delay, server):
     while 1:
@@ -128,6 +209,10 @@ server.set_fn_message_received(message_received)
 _thread.start_new_thread( send_all_public, ("Thread-all_public", 30, server, ) )
 _thread.start_new_thread( send_temp_public, ("Thread-temp_public", 10, server, ) )
 _thread.start_new_thread( send_tx_public, ("Thread-tx_public", 2, server, ) )
+_thread.start_new_thread( send_ntp_public, ("Thread-ntp_public", 10, server, ) )
+_thread.start_new_thread( send_messages_public, ("Thread-messages_public", 2, server, ) )
+_thread.start_new_thread( send_power_supply_public, ("Thread-power_supply_public", 2, server, ) )
+_thread.start_new_thread( send_rf_output_public, ("Thread-rf_output_public", 2, server, ) )
 
 #_thread.start_new_thread( send_test_private, ("Thread-test_private", 3, server, ) )
 
