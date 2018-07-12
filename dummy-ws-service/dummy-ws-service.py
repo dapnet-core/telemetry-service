@@ -61,6 +61,17 @@ def send_temp_public(threadName, delay, server):
         time.sleep (delay)
         print ('Send public message from %s' % (threadName))
 
+def send_tx_public(threadName, delay, server):
+    while 1:
+        complete_telemetry_1['onair'] = (randint(0, 10) > 7)
+        update_data = {}
+        update_data['name'] = complete_telemetry_1['name']
+        update_data['type'] = complete_telemetry_1['type']
+        update_data['onair'] = complete_telemetry_1['onair']
+
+        server.send_message_to_all(json.dumps(update_data))
+        time.sleep (delay)
+        print ('Send public message from %s' % (threadName))
 
 def send_test_private(threadName, delay, server):
     data = {}
@@ -81,6 +92,7 @@ def new_client(client, server):
     Clients[client['id']] = {}
     Clients[client['id']]['auth'] = False
     Clients[client['id']]['client'] = client
+    server.send_message_to_all(json.dumps(complete_telemetry_1))
 
 
 # Called for every client disconnecting
@@ -115,6 +127,8 @@ server.set_fn_message_received(message_received)
 
 _thread.start_new_thread( send_all_public, ("Thread-all_public", 30, server, ) )
 _thread.start_new_thread( send_temp_public, ("Thread-temp_public", 10, server, ) )
+_thread.start_new_thread( send_tx_public, ("Thread-tx_public", 2, server, ) )
+
 #_thread.start_new_thread( send_test_private, ("Thread-test_private", 3, server, ) )
 
 server.run_forever()
