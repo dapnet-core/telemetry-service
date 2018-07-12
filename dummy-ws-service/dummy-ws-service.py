@@ -41,7 +41,7 @@ def send_all_public(threadName, delay, server):
     while 1:
         server.send_message_to_all(json.dumps(complete_telemetry_1))
         time.sleep (delay)
-        print ('Send public message from %s' % (threadName))
+#        print ('Send public message from %s' % (threadName))
 
 def send_temp_public(threadName, delay, server):
     while 1:
@@ -59,7 +59,7 @@ def send_temp_public(threadName, delay, server):
 
         server.send_message_to_all(json.dumps(update_data))
         time.sleep (delay)
-        print ('Send public message from %s' % (threadName))
+#        print ('Send public message from %s' % (threadName))
 
 def send_tx_public(threadName, delay, server):
     while 1:
@@ -71,7 +71,7 @@ def send_tx_public(threadName, delay, server):
 
         server.send_message_to_all(json.dumps(update_data))
         time.sleep (delay)
-        print ('Send public message from %s' % (threadName))
+#        print ('Send public message from %s' % (threadName))
 
 def send_test_private(threadName, delay, server):
     data = {}
@@ -82,7 +82,7 @@ def send_test_private(threadName, delay, server):
             if clientdata['auth']:
                 server.send_message(clientdata['client'],json.dumps(data))
         time.sleep (delay)
-        print ('Send private message from %s' % (threadName))
+#        print ('Send private message from %s' % (threadName))
 
 
 # Called for every client connecting (after handshake)
