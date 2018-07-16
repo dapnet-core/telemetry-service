@@ -56,21 +56,56 @@ complete_telemetry_node1 = {}
 complete_telemetry_node1['type'] = 'node'
 complete_telemetry_node1['name'] = 'dl2ic'
 complete_telemetry_node1['good_health'] = True
-complete_telemetry_node1['version'] : '1.2.3'
-complete_telemetry_node1['microservices_running'] = {}
-complete_telemetry_node1['microservices_running']['database'] = True
-complete_telemetry_node1['microservices_running']['call'] = True
-complete_telemetry_node1['microservices_running']['rubric'] = True
-complete_telemetry_node1['microservices_running']['transmitter'] = True
-complete_telemetry_node1['microservices_running']['cluster'] = True
-complete_telemetry_node1['microservices_running']['telemetry'] = True
-complete_telemetry_node1['microservices_running']['database-changes'] = True
-complete_telemetry_node1['microservices_running']['statistics'] = True
-complete_telemetry_node1['microservices_running']['rabbitmq'] = True
-complete_telemetry_node1['microservices_running']['thirdparty'] = True
-complete_telemetry_node1['connected_transmitters'] = 123
-complete_telemetry_node1['free_disk_space_MB'] = 1234
-complete_telemetry_node1['CPU_utilization'] = 0.2
+complete_telemetry_node1['microservices'] = {}
+complete_telemetry_node1['microservices']['database'] = {}
+complete_telemetry_node1['microservices']['database']['ok'] = True
+complete_telemetry_node1['microservices']['database']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['call'] = {}
+complete_telemetry_node1['microservices']['call']['ok'] = True
+complete_telemetry_node1['microservices']['call']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['rubric'] = {}
+complete_telemetry_node1['microservices']['rubric']['ok'] = True
+complete_telemetry_node1['microservices']['rubric']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['transmitter'] = {}
+complete_telemetry_node1['microservices']['transmitter']['ok'] = True
+complete_telemetry_node1['microservices']['transmitter']
+
+complete_telemetry_node1['microservices']['cluster'] = {}
+complete_telemetry_node1['microservices']['cluster']['ok'] = True
+complete_telemetry_node1['microservices']['cluster']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['telemetry'] = {}
+complete_telemetry_node1['microservices']['telemetry']['ok'] = True
+complete_telemetry_node1['microservices']['telemetry']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['database-changes'] = {}
+complete_telemetry_node1['microservices']['database-changes']['ok'] = True
+complete_telemetry_node1['microservices']['database-changes']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['statistics'] = {}
+complete_telemetry_node1['microservices']['statistics']['ok'] = True
+complete_telemetry_node1['microservices']['statistics']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['rabbitmq'] = {}
+complete_telemetry_node1['microservices']['rabbitmq']['ok'] = True
+complete_telemetry_node1['microservices']['rabbitmq']['version'] = '1.2.3'
+
+complete_telemetry_node1['microservices']['thirdparty'] = {}
+complete_telemetry_node1['microservices']['thirdparty']['ok'] = True
+complete_telemetry_node1['microservices']['thirdparty']['version'] = '1.2.3'
+
+complete_telemetry_node1['connections'] = {}
+complete_telemetry_node1['connections']['transmitters'] = 123
+complete_telemetry_node1['connections']['third_party'] = 11
+complete_telemetry_node1['connections']['websocket'] = 22
+
+complete_telemetry_node1['system'] = {}
+complete_telemetry_node1['system']['free_disk_space_mb'] = 1234
+complete_telemetry_node1['system']['cpu_utilization'] = 0.2
+complete_telemetry_node1['system']['is_hamcloud'] = False
 
 
 
@@ -85,21 +120,23 @@ def send_all_public(threadName, delay, server):
 def send_node_public(threadName, delay, server):
     while 1:
         complete_telemetry_node1['good_health'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['version'] : '1.2.3'
-        complete_telemetry_node1['microservices_running'] = {}
-        complete_telemetry_node1['microservices_running']['database'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['call'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['rubric'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['transmitter'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['cluster'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['telemetry'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['database-changes'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['statistics'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['rabbitmq'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['microservices_running']['thirdparty'] = (randint(0, 50) > 40)
-        complete_telemetry_node1['connected_transmitters'] = randint(0, 300)
-        complete_telemetry_node1['free_disk_space_MB'] = randint(0, 3000)
-        complete_telemetry_node1['CPU_utilization'] = randint(0, 100) / 100
+        complete_telemetry_node1['microservices']['database']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['call']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['rubric']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['transmitter']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['cluster']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['telemetry']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['database-changes']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['statistics']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['rabbitmq']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices']['thirdparty']['ok'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['connections']['transmitters'] = randint(0, 300)
+        complete_telemetry_node1['connections']['third_party'] = randint(0, 30)
+        complete_telemetry_node1['connections']['websocket'] = len(Clients.keys())
+
+        complete_telemetry_node1['system']['free_disk_space_mb'] = randint(0, 3000)
+        complete_telemetry_node1['system']['cpu_utilization'] = randint(0, 100) / 100
+        complete_telemetry_node1['system']['is_hamcloud'] = (randint(0, 50) > 40)
 
         server.send_message_to_all(json.dumps(complete_telemetry_node1))
         time.sleep (delay)
