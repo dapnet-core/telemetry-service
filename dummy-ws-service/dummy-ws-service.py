@@ -10,7 +10,7 @@ user = 'test'
 password = 'test1234'
 
 complete_telemetry_1 = {}
-complete_telemetry_1['type'] = 'telemetry'
+complete_telemetry_1['type'] = 'transmitter'
 complete_telemetry_1['name'] = 'dl2ic'
 complete_telemetry_1['onair'] = False
 complete_telemetry_1['node'] = {}
@@ -52,13 +52,59 @@ complete_telemetry_1['config']['software']['verson'] = '1.2.3'
 complete_telemetry_1['hardware'] = {}
 complete_telemetry_1['hardware']['platform'] = 'Raspberry Pi 3B+'
 
+complete_telemetry_node1 = {}
+complete_telemetry_node1['type'] = 'node'
+complete_telemetry_node1['name'] = 'dl2ic'
+complete_telemetry_node1['good_health'] = True
+complete_telemetry_node1['version'] : '1.2.3'
+complete_telemetry_node1['microservices_running'] = {}
+complete_telemetry_node1['microservices_running']['database'] = True
+complete_telemetry_node1['microservices_running']['call'] = True
+complete_telemetry_node1['microservices_running']['rubric'] = True
+complete_telemetry_node1['microservices_running']['transmitter'] = True
+complete_telemetry_node1['microservices_running']['cluster'] = True
+complete_telemetry_node1['microservices_running']['telemetry'] = True
+complete_telemetry_node1['microservices_running']['database-changes'] = True
+complete_telemetry_node1['microservices_running']['statistics'] = True
+complete_telemetry_node1['microservices_running']['rabbitmq'] = True
+complete_telemetry_node1['microservices_running']['thirdparty'] = True
+complete_telemetry_node1['connected_transmitters'] = 123
+complete_telemetry_node1['free_disk_space_MB'] = 1234
+complete_telemetry_node1['CPU_utilization'] = 0.2
+
 
 
 def send_all_public(threadName, delay, server):
     while 1:
         server.send_message_to_all(json.dumps(complete_telemetry_1))
+        server.send_message_to_all(json.dumps(complete_telemetry_node1))
+
         time.sleep (delay)
 #        print ('Send public message from %s' % (threadName))
+
+def send_node_public(threadName, delay, server):
+    while 1:
+        complete_telemetry_node1['good_health'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['version'] : '1.2.3'
+        complete_telemetry_node1['microservices_running'] = {}
+        complete_telemetry_node1['microservices_running']['database'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['call'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['rubric'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['transmitter'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['cluster'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['telemetry'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['database-changes'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['statistics'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['rabbitmq'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['microservices_running']['thirdparty'] = (randint(0, 50) > 40)
+        complete_telemetry_node1['connected_transmitters'] = randint(0, 300)
+        complete_telemetry_node1['free_disk_space_MB'] = randint(0, 3000)
+        complete_telemetry_node1['CPU_utilization'] = randint(0, 100) / 100
+
+        server.send_message_to_all(json.dumps(complete_telemetry_node1))
+        time.sleep (delay)
+#        print ('Send public message from %s' % (threadName))
+
 
 def send_ntp_public(threadName, delay, server):
     while 1:
@@ -77,6 +123,7 @@ def send_ntp_public(threadName, delay, server):
         server.send_message_to_all(json.dumps(update_data))
         time.sleep (delay)
 #        print ('Send public message from %s' % (threadName))
+
 def send_rf_output_public(threadName, delay, server):
     while 1:
         complete_telemetry_1['rf_output']['fwd'] = randint(5, 2000) / 10
@@ -174,7 +221,7 @@ def new_client(client, server):
     Clients[client['id']]['auth'] = False
     Clients[client['id']]['client'] = client
     server.send_message_to_all(json.dumps(complete_telemetry_1))
-
+    server.send_message_to_all(json.dumps(complete_telemetry_node1))
 
 # Called for every client disconnecting
 def client_left(client, server):
@@ -213,6 +260,7 @@ _thread.start_new_thread( send_ntp_public, ("Thread-ntp_public", 10, server, ) )
 _thread.start_new_thread( send_messages_public, ("Thread-messages_public", 2, server, ) )
 _thread.start_new_thread( send_power_supply_public, ("Thread-power_supply_public", 2, server, ) )
 _thread.start_new_thread( send_rf_output_public, ("Thread-rf_output_public", 2, server, ) )
+_thread.start_new_thread( send_node_public, ("Thread-node_public", 10, server, ) )
 
 #_thread.start_new_thread( send_test_private, ("Thread-test_private", 3, server, ) )
 
