@@ -48,7 +48,7 @@ complete_telemetry_1['config']['ip'] = '1.2.3.4'
 complete_telemetry_1['config']['timeslots'] = [True, True, False, True, False, False, True, True, False, True, False, False, True, True, False, True, False, False]
 complete_telemetry_1['config']['software'] = {}
 complete_telemetry_1['config']['software']['name'] = 'Unipager'
-complete_telemetry_1['config']['software']['verson'] = '1.2.3'
+complete_telemetry_1['config']['software']['version'] = '1.2.3'
 complete_telemetry_1['hardware'] = {}
 complete_telemetry_1['hardware']['platform'] = 'Raspberry Pi 3B+'
 
