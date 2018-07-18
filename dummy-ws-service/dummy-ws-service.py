@@ -353,7 +353,7 @@ def transmitter_update_onair(threadName, delay, myfactory):
 
 if __name__ == '__main__':
 
-    factory = DAPNETFactory(u"ws://0.0.0.0:9003")
+    factory = DAPNETFactory(u"ws://0.0.0.0:9001")
     factory.protocol = ServiceServerProtocol
     listenWS(factory)
     _thread.start_new_thread( node_update_all, ("Thread-node_update_all", 10, factory, ) )
