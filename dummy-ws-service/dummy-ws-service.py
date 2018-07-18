@@ -56,6 +56,11 @@ complete_telemetry_transmitter1['config']['software']['name'] = 'Unipager'
 complete_telemetry_transmitter1['config']['software']['version'] = '1.2.3'
 complete_telemetry_transmitter1['hardware'] = {}
 complete_telemetry_transmitter1['hardware']['platform'] = 'Raspberry Pi 3B+'
+complete_telemetry_transmitter1['rf_hardware'] = {}
+complete_telemetry_transmitter1['rf_hardware']['rfm69'] = {}
+complete_telemetry_transmitter1['rf_hardware']['rfm69']['name'] = 'RFM69'
+complete_telemetry_transmitter1['rf_hardware']['rfm69']['port'] = '/dev/ttyUSB0'
+
 
 complete_telemetry_node1 = {}
 complete_telemetry_node1['name'] = 'db0sda'
@@ -351,6 +356,73 @@ def transmitter_update_onair(threadName, delay, myfactory):
         myfactory.send2client('/transmitters', msg)
         time.sleep (delay)
 
+def transmitter_update_rf_hardware(threadName, delay, myfactory):
+    while 1:
+        update_data = {}
+        update_data['name'] = complete_telemetry_transmitter1['name']
+        update_data['rf_hardware'] = {}
+
+        # C9000
+        if randint(0, 10) < 2:
+            update_data['rf_hardware']['c9000'] = {}
+            update_data['rf_hardware']['c9000']['name'] = 'C9000 Compact'
+
+            if randint(0, 10) < 5:
+                update_data['rf_hardware']['c9000']['pa_dummy'] = {}
+                update_data['rf_hardware']['c9000']['pa_dummy']['output_power'] = 123
+                update_data['rf_hardware']['c9000']['pa_dummy']['port'] = '/dev/ttyUSB0'
+
+            if randint(0, 10) < 5:
+                update_data['rf_hardware']['c9000']['rpc'] = {}
+                update_data['rf_hardware']['c9000']['rpc']['version'] = 'XOS/2.23pre'
+        # Raspager
+        elif (randint(0, 10) >=2) and (randint(0, 10) < 4):
+            update_data['rf_hardware']['raspager'] = {}
+            update_data['rf_hardware']['raspager']['name'] = 'Raspager'
+            update_data['rf_hardware']['raspager']['modulation'] = 13
+            update_data['rf_hardware']['raspager']['power'] = 63
+            update_data['rf_hardware']['raspager']['external_pa'] = False
+            update_data['rf_hardware']['raspager']['version'] = 'V2'
+
+        # Audio
+        elif (randint(0, 10) >=4) and (randint(0, 10) < 6):
+            update_data['rf_hardware']['audio'] = {}
+            update_data['rf_hardware']['audio']['name'] = 'Audio'
+            update_data['rf_hardware']['audio']['transmitter'] = 'FREITEXT'
+            update_data['rf_hardware']['audio']['audio_level'] = 83
+            update_data['rf_hardware']['audio']['txdelay'] = 3
+
+        # rf_hardware
+        elif (randint(0, 10) >=6) and (randint(0, 10) < 8):
+            update_data['rf_hardware']['rfm69'] = {}
+            update_data['rf_hardware']['rfm69']['name'] = 'RFM69'
+            update_data['rf_hardware']['rfm69']['port'] = '/dev/ttyUSB0'
+        # MMDVM
+        else:
+            update_data['rf_hardware']['mmdvm'] = {}
+            update_data['rf_hardware']['mmdvm']['name'] = 'MMDVM'
+            update_data['rf_hardware']['mmdvm']['dapnet_exclusive'] = (randint(0, 10) < 8)
+
+        msg = json.dumps(update_data)
+        myfactory.send2client('/transmitters', msg)
+        time.sleep (delay)
+
+def transmitter_update_current_timeslot(threadName, delay, myfactory):
+    last_timeslot = 19;
+    while 1:
+        deciseconds = round(time.time()*10)
+        current_timeslot = int(deciseconds >> 6) & 0b1111
+        if current_timeslot != last_timeslot:
+            update_data = {}
+            update_data['current_timeslot'] = current_timeslot
+            last_timeslot = current_timeslot
+            msg = json.dumps(update_data)
+            myfactory.send2client('/transmitters', msg)
+
+        time.sleep (delay)
+
+
+
 if __name__ == '__main__':
 
     factory = DAPNETFactory(u"ws://0.0.0.0:9001")
@@ -363,4 +435,6 @@ if __name__ == '__main__':
     _thread.start_new_thread( transmitter_update_temp, ("Thread-transmitter_update_temp", 8, factory, ) )
     _thread.start_new_thread( transmitter_update_messages, ("Thread-transmitter_update_messages", 4, factory, ) )
     _thread.start_new_thread( transmitter_update_onair, ("Thread-transmitter_update_onair", 4, factory, ) )
+    _thread.start_new_thread( transmitter_update_rf_hardware, ("Thread-transmitter_update_rf_hardware", 7, factory, ) )
+    _thread.start_new_thread( transmitter_update_current_timeslot, ("Thread-transmitter_current_timeslot", 0.05, factory, ) )
     reactor.run()
