@@ -58,7 +58,7 @@ complete_telemetry_transmitter1['hardware'] = {}
 complete_telemetry_transmitter1['hardware']['platform'] = 'Raspberry Pi 3B+'
 
 complete_telemetry_node1 = {}
-complete_telemetry_node1['name'] = 'dl2ic'
+complete_telemetry_node1['name'] = 'db0sda'
 complete_telemetry_node1['good_health'] = True
 complete_telemetry_node1['microservices'] = {}
 complete_telemetry_node1['microservices']['database'] = {}
