@@ -48,7 +48,7 @@ defmodule Telemetry.Consumer do
                      {:unknown, key}
     end
 
-    data
+    data = data
     |> Map.put("type", type)
     |> Map.put("id", id)
     |> Poison.encode!
