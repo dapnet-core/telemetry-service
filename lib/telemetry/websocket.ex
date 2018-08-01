@@ -4,7 +4,7 @@ defmodule Telemetry.Websocket do
   require Logger
 
   def init(req, :all) do
-    {:cowboy_websocket, req, :telemetry}
+    {:cowboy_websocket, req, :telemetry, %{idle_timeout: :infinity}}
   end
 
   def init(req, :node) do
