@@ -24,6 +24,7 @@ defmodule Telemetry.Application do
         ]
       ),
       worker(Telemetry.Consumer, [], restart: :permanent),
+      worker(Telemetry.Database, [], restart: :permanent),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

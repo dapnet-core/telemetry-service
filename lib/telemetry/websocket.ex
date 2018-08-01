@@ -19,7 +19,17 @@ defmodule Telemetry.Websocket do
 
   def websocket_init(state) do
     :gproc.reg({:p, :l, state})
-    {:ok, state}
+
+    case state do
+      {type, id} ->
+        result = Telemetry.Database.lookup({type, id})
+        if result do
+          {:reply, {:text, Poison.encode!(result)}, state}
+        else
+          {:reply, {:text, "{}"}, state}
+        end
+      _ -> {:ok, state}
+    end
   end
 
   def websocket_handle({:text, message}, state) do
@@ -28,17 +38,14 @@ defmodule Telemetry.Websocket do
   end
 
   def websocket_handle({:json, _}, state) do
-    {:reply, {:text, "hello world"}, state}
+    {:reply, {:text, "{}"}, state}
   end
 
   def websocket_info({:text, data}, state) do
-    Logger.info("Websocket reply: #{data}")
     {:reply, {:text, data}, state}
   end
 
   def websocket_info(info, state) do
-    Logger.info("Websocket info")
-    IO.inspect info
     {:ok, state}
   end
 
