@@ -9,12 +9,12 @@ defmodule Telemetry.Websocket do
 
   def init(req, :node) do
     id = Map.get(req.bindings, :id)
-    {:cowboy_websocket, req, {:node, id}}
+    {:cowboy_websocket, req, {:node, id}, %{idle_timeout: :infinity}}
   end
 
   def init(req, :transmitter) do
     id = Map.get(req.bindings, :id)
-    {:cowboy_websocket, req, {:transmitter, id}}
+    {:cowboy_websocket, req, {:transmitter, id}, %{idle_timeout: :infinity}}
   end
 
   def websocket_init(state) do
@@ -23,12 +23,15 @@ defmodule Telemetry.Websocket do
     case state do
       {type, id} ->
         result = Telemetry.Database.lookup({type, id})
+
         if result do
           {:reply, {:text, Poison.encode!(result)}, state}
         else
           {:reply, {:text, "{}"}, state}
         end
-      _ -> {:ok, state}
+
+      _ ->
+        {:ok, state}
     end
   end
 
