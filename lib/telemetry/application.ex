@@ -17,8 +17,8 @@ defmodule Telemetry.Application do
           port: 80,
           dispatch: [{:_, [
                          {"/telemetry", Telemetry.Websocket, :all},
-                         {"/telemetry/transmitter/:id", Telemetry.Websocket, :transmitter},
-                         {"/telemetry/node/:id", Telemetry.Websocket, :node},
+                         {"/telemetry/transmitters/:id", Telemetry.Websocket, :transmitter},
+                         {"/telemetry/nodes/:id", Telemetry.Websocket, :node},
                          {:_, Plug.Adapters.Cowboy2.Handler, {Telemetry.Router, []}}
                        ]}]
         ]
