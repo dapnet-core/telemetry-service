@@ -33,27 +33,29 @@ defmodule Telemetry.Consumer do
   def handle_info({:basic_deliver, payload, %{delivery_tag: tag, routing_key: key}}, chan) do
     :ok = Basic.ack chan, tag
 
-    data = Poison.decode!(payload)
-
-    {type, id} = case key do
+    {type, id, data} = case key do
       "transmitter." <> call ->
-                     :gproc.send({:p, :l, {:transmitter, call}}, {:text, payload})
-                     Telemetry.Database.update({:transmitter, call, data})
-                     {:transmitter, call}
+        data = Poison.decode!(payload)
+        :gproc.send({:p, :l, {:transmitter, call}}, {:text, payload})
+        Telemetry.Database.update({:transmitter, call, data})
+        {:transmitter, call, data}
       "node." <> id ->
-                     :gproc.send({:p, :l, {:node, id}}, {:text, payload})
-                     Telemetry.Database.update({:node, id, data})
-                     {:node, id}
-                   _ ->
-                     {:unknown, key}
+        data = Poison.decode!(payload)
+        :gproc.send({:p, :l, {:node, id}}, {:text, payload})
+        Telemetry.Database.update({:node, id, data})
+        {:node, id, data}
+      _ ->
+        {:unknown, key, nil}
     end
 
-    data = data
-    |> Map.put("type", type)
-    |> Map.put("id", id)
-    |> Poison.encode!
+    if type != :unknown do
+      data = data
+      |> Map.put("type", type)
+      |> Map.put("id", id)
+      |> Poison.encode!
 
-    :gproc.send({:p, :l, :telemetry}, {:text, data})
+      :gproc.send({:p, :l, :telemetry}, {:text, data})
+    end
 
     {:noreply, chan}
   end
