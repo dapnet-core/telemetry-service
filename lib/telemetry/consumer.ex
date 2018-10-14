@@ -98,7 +98,7 @@ defmodule Telemetry.Consumer do
   defp setup_queue(chan) do
     # Messages that cannot be delivered to any consumer in the main queue will be routed to the error queue
     {:ok, _} = Queue.declare(chan, @queue, durable: true)
-    :ok = Exchange.fanout(chan, @exchange, durable: true)
+    :ok = Exchange.topic(chan, @exchange, durable: true)
     :ok = Queue.bind(chan, @queue, @exchange)
   end
 end
