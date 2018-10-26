@@ -101,6 +101,7 @@ defmodule Telemetry.Consumer do
     # Messages that cannot be delivered to any consumer in the main queue will be routed to the error queue
     {:ok, _} = Queue.declare(chan, @queue, durable: true)
     :ok = Exchange.topic(chan, @exchange, durable: true)
-    :ok = Queue.bind(chan, @queue, @exchange)
+    :ok = Queue.bind(chan, @queue, @exchange, routing_key: "transmitter.*")
+    :ok = Queue.bind(chan, @queue, @exchange, routing_key: "node.*")
   end
 end
