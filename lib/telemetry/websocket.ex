@@ -4,7 +4,7 @@ defmodule Telemetry.Websocket do
   require Logger
 
   def init(req, :all) do
-    {:cowboy_websocket, req, :telemetry, %{idle_timeout: :infinity}}
+    {:cowboy_websocket, req, {:pubsub, MapSet.new()}, %{idle_timeout: :infinity}}
   end
 
   def init(req, :node) do
@@ -18,10 +18,11 @@ defmodule Telemetry.Websocket do
   end
 
   def websocket_init(state) do
-    :gproc.reg({:p, :l, state})
 
     case state do
       {type, id} ->
+        :gproc.reg({:p, :l, state})
+
         result = Telemetry.Database.lookup({type, id})
 
         if result do
@@ -40,8 +41,54 @@ defmodule Telemetry.Websocket do
     websocket_handle({:json, json}, state)
   end
 
-  def websocket_handle({:json, _}, state) do
-    {:reply, {:text, "{}"}, state}
+  def websocket_handle({:json, data}, state) do
+    case state do
+      {:pubsub, subscribed} ->
+        states = Map.get(data, "subscribe", [])
+        |> Enum.map(fn call ->
+          result = Telemetry.Database.lookup({:transmitter, call})
+
+          if result do
+            {:text, Poison.encode!(result)}
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+
+        subscribed = MapSet.new(Map.get(data, "subscribe", []))
+        |> MapSet.difference(subscribed)
+        |> Enum.map(fn call ->
+          try do
+            :gproc.reg({:p, :l, {:transmitter, call}})
+            call
+          rescue
+            ArgumentError -> ()
+          end
+        end)
+        |> MapSet.new()
+        |> MapSet.union(subscribed)
+
+        unsubscribed = MapSet.new(Map.get(data, "unsubscribe", []))
+        |> MapSet.intersection(subscribed)
+        |> Enum.map(fn call ->
+          try do
+            :gproc.unreg({:p, :l, {:transmitter, call}})
+            call
+          rescue
+            ArgumentError -> ()
+          end
+        end)
+        |> MapSet.new()
+
+        subscribed = MapSet.difference(subscribed, unsubscribed)
+
+        replies = [{:text, Poison.encode!(%{subscribed: subscribed})}] ++ states
+
+        IO.inspect replies
+
+        {:reply, replies, {:pubsub, subscribed}}
+      _ ->
+        {:reply, {:text, "{}"}, state}
+    end
   end
 
   def websocket_info({:text, data}, state) do

@@ -35,27 +35,27 @@ defmodule Telemetry.Consumer do
 
     {type, id, data} = case key do
       "transmitter." <> call ->
-        data = Poison.decode!(payload)
-        :gproc.send({:p, :l, {:transmitter, call}}, {:text, payload})
+        data = Poison.decode!(payload) |> Map.put("_id", call)
+        :gproc.send({:p, :l, {:transmitter, call}}, {:text, Poison.encode!(data)})
         Telemetry.Database.update({:transmitter, call, data})
         {:transmitter, call, data}
       "node." <> id ->
-        data = Poison.decode!(payload)
-        :gproc.send({:p, :l, {:node, id}}, {:text, payload})
+        data = Poison.decode!(payload) |> Map.put("_id", id)
+        :gproc.send({:p, :l, {:node, id}}, {:text, Poison.encode!(data)})
         Telemetry.Database.update({:node, id, data})
         {:node, id, data}
       _ ->
         {:unknown, key, nil}
     end
 
-    if type != :unknown do
-      data = data
-      |> Map.put("type", type)
-      |> Map.put("id", id)
-      |> Poison.encode!
+    #if type != :unknown do
+    #  data = data
+    #  |> Map.put("type", type)
+    #  |> Map.put("id", id)
+    #  |> Poison.encode!
 
-      :gproc.send({:p, :l, :telemetry}, {:text, data})
-    end
+    #  :gproc.send({:p, :l, :telemetry}, {:text, data})
+    #end
 
     {:noreply, chan}
   end
