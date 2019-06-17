@@ -33,29 +33,26 @@ defmodule Telemetry.Consumer do
   def handle_info({:basic_deliver, payload, %{delivery_tag: tag, routing_key: key}}, chan) do
     :ok = Basic.ack chan, tag
 
-    {type, id, data} = case key do
+    case key do
       "transmitter." <> call ->
-        data = Poison.decode!(payload) |> Map.put("_id", call)
+        data = Poison.decode!(payload)
+        |> Map.put("_id", call)
+        |> Map.put("_type", "transmitter")
+
         :gproc.send({:p, :l, {:transmitter, call}}, {:text, Poison.encode!(data)})
         Telemetry.Database.update({:transmitter, call, data})
         {:transmitter, call, data}
+
       "node." <> id ->
-        data = Poison.decode!(payload) |> Map.put("_id", id)
+        data = Poison.decode!(payload)
+        |> Map.put("_id", id)
+        |> Map.put("_type", "node")
+
         :gproc.send({:p, :l, {:node, id}}, {:text, Poison.encode!(data)})
         Telemetry.Database.update({:node, id, data})
-        {:node, id, data}
-      _ ->
-        {:unknown, key, nil}
+
+       _ -> ()
     end
-
-    #if type != :unknown do
-    #  data = data
-    #  |> Map.put("type", type)
-    #  |> Map.put("id", id)
-    #  |> Poison.encode!
-
-    #  :gproc.send({:p, :l, :telemetry}, {:text, data})
-    #end
 
     {:noreply, chan}
   end

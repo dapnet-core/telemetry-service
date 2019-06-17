@@ -4,7 +4,7 @@ defmodule Telemetry.Websocket do
   require Logger
 
   def init(req, :all) do
-    {:cowboy_websocket, req, {:pubsub, MapSet.new()}, %{idle_timeout: :infinity}}
+    {:cowboy_websocket, req, {:pubsub, MapSet.new(), MapSet.new()}, %{idle_timeout: :infinity}}
   end
 
   def init(req, :node) do
@@ -43,10 +43,36 @@ defmodule Telemetry.Websocket do
 
   def websocket_handle({:json, data}, state) do
     case state do
-      {:pubsub, subscribed} ->
-        states = Map.get(data, "subscribe", [])
-        |> Enum.map(fn call ->
-          result = Telemetry.Database.lookup({:transmitter, call})
+      {:pubsub, transmitters, nodes} ->
+        {subscribed_transmitters, transmitter_states} =
+          pubsub(:transmitter,
+            transmitters,
+            Map.get(data, "subscribe_transmitters", []),
+            Map.get(data, "unsubscribe_transmitters", [])
+          )
+
+        {subscribed_nodes, node_states} =
+          pubsub(:node,
+            nodes,
+            Map.get(data, "subscribe_nodes", []),
+            Map.get(data, "unsubscribe_nodes", [])
+          )
+
+        replies = [{:text, Poison.encode!(%{
+                           transmitters: subscribed_transmitters,
+                           nodes: subscribed_nodes,
+                           "_type": "subscription"})}] ++ transmitter_states ++ node_states
+
+        {:reply, replies, {:pubsub, subscribed_transmitters, subscribed_nodes}}
+      _ ->
+        {:reply, {:text, "{}"}, state}
+    end
+  end
+
+  defp pubsub(mtype, subscribed, to_subscribe, to_unsubscribe) do
+        states = to_subscribe
+        |> Enum.map(fn id ->
+          result = Telemetry.Database.lookup({mtype, id})
 
           if result do
             {:text, Poison.encode!(result)}
@@ -54,12 +80,12 @@ defmodule Telemetry.Websocket do
         end)
         |> Enum.reject(&is_nil/1)
 
-        subscribed = MapSet.new(Map.get(data, "subscribe", []))
+        subscribed = MapSet.new(to_subscribe)
         |> MapSet.difference(subscribed)
-        |> Enum.map(fn call ->
+        |> Enum.map(fn id ->
           try do
-            :gproc.reg({:p, :l, {:transmitter, call}})
-            call
+            :gproc.reg({:p, :l, {mtype, id}})
+            id
           rescue
             ArgumentError -> ()
           end
@@ -67,12 +93,12 @@ defmodule Telemetry.Websocket do
         |> MapSet.new()
         |> MapSet.union(subscribed)
 
-        unsubscribed = MapSet.new(Map.get(data, "unsubscribe", []))
+        unsubscribed = MapSet.new(to_unsubscribe)
         |> MapSet.intersection(subscribed)
-        |> Enum.map(fn call ->
+        |> Enum.map(fn id ->
           try do
-            :gproc.unreg({:p, :l, {:transmitter, call}})
-            call
+            :gproc.unreg({:p, :l, {mtype, id}})
+            id
           rescue
             ArgumentError -> ()
           end
@@ -80,15 +106,7 @@ defmodule Telemetry.Websocket do
         |> MapSet.new()
 
         subscribed = MapSet.difference(subscribed, unsubscribed)
-
-        replies = [{:text, Poison.encode!(%{subscribed: subscribed})}] ++ states
-
-        IO.inspect replies
-
-        {:reply, replies, {:pubsub, subscribed}}
-      _ ->
-        {:reply, {:text, "{}"}, state}
-    end
+        {subscribed, states}
   end
 
   def websocket_info({:text, data}, state) do
